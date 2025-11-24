@@ -1,3 +1,4 @@
+from watchlist_app import Watchlist
 import streamlit as st
 import yfinance as yf
 import plotly.graph_objs as go
@@ -77,6 +78,13 @@ ticker_symbol = st.sidebar.text_input("Ticker", value="AAPL")
 period = st.sidebar.selectbox(
     "History Period", ["1mo", "3mo", "6mo", "1y", "2y"], index=2)
 
+wl = Watchlist(["AAPL", "NVDA", "TSLA"])   # preloaded
+
+df_wl = wl.load_data()
+watchlist = st.sidebar.dataframe(df_wl,
+                                 use_container_width=True,
+                                 height=430)
+
 ticker = yf.Ticker(ticker_symbol)
 
 options_quotes, strat_builder = st.columns(2)
@@ -110,11 +118,11 @@ if ticker:
             if chain is not None:
                 with select_opt:
                     view_mode = st.radio(
-                        "View", ["Calls", "Puts", "Both"], horizontal=True)
+                        "Option Type", ["Calls", "Puts", "Both"], horizontal=True)
                 num_choices = ["6", "10", "20", "All"]
                 with select_strikes:
                     num_label = st.selectbox(
-                        "Number of strikes around ATM", num_choices, index=2)
+                        "Number of strikes around ATM", num_choices, index=1)
                 num_strikes = None if num_label == "All" else int(num_label)
 
                 calls = chain.calls.copy()
@@ -227,7 +235,9 @@ if ticker:
     # Strategy Builder
     with strat_builder:
         st.subheader("Strategy Builder")
+        st.button("Add Leg")
 
+    # Stock Price History
     with price_history:
         st.subheader(f"{ticker_symbol} Price History")
         hist = ticker.history(period)
@@ -250,5 +260,6 @@ if ticker:
             )
             st.plotly_chart(fig, use_container_width=True)
 
+    # Visualize Strategy
     with visualizer:
         st.subheader("Strategy Visualizer")
