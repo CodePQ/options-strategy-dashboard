@@ -108,7 +108,26 @@ tab1, tab2 = st.tabs(["Strategy Builder", "Dashboard"])
 
 with tab2:
     st.subheader("Dashboard")
+    if "df" not in st.session_state:
+        st.session_state.df = pd.DataFrame({"col1": [], "col2": []})
 
+    edited_df = st.data_editor(
+        st.session_state.df, num_rows="dynamic", use_container_width=True)
+
+    if st.button("Add New Row"):
+        # Customize with default values
+        new_row = pd.DataFrame([{"col1": "", "col2": ""}])
+        st.session_state.df = pd.concat(
+            [edited_df, new_row], ignore_index=True)
+        st.rerun()  # Rerun to update the data editor
+
+    if st.button("Delete Selected Rows"):
+        # Assuming you've implemented a way to track selected rows, e.g., via checkboxes in a custom column
+        # For simplicity, if using the built-in delete, edited_df will already reflect deletions.
+        # If you're managing selections manually, you'd filter based on those selections.
+        st.session_state.df = edited_df
+        st.rerun()
+    st.session_state.df = edited_df
 with tab1:
     # ---- Click-to-switch using radio ----
     selected = st.sidebar.radio(
